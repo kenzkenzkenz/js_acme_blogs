@@ -27,7 +27,7 @@ function createElemWithText(elementName = "p", textContent = "", className){
   // h. Assigns the user.name to the option.textContent
   // i. Return an array of options elements
 
-  const users = [
+  const usersArray = [
     {
         id: 1,
         name: "Leanne Graham",
@@ -48,16 +48,15 @@ function createElemWithText(elementName = "p", textContent = "", className){
       }
     ];
 
+  function createSelectOptions(users){
 
-  function createSelectOptions(jsonData){
+    if (!users) return;//deal with initial conditions
 
-    if (jsonData === undefined) return;//deal with initial conditions
-    
-    let optionArray = []; //create an array
+    const optionArray = []; //create an array
         
       //loop thru the data
-      jsonData.forEach(() => { //begin loop
-        let option = document.createElement("option"); //create options element
+      users.forEach(() => { //begin loop
+        const option = document.createElement("option"); //create options element
         option.value = users.id;
         option.textContent = users.name;
         optionArray.push(option.value, option.textContent);
@@ -65,7 +64,7 @@ function createElemWithText(elementName = "p", textContent = "", className){
     
     return optionArray; //return the array
   }
-    createSelectOptions(users);
+    //createSelectOptions(usersArray);
     
   // 3. toggleCommentSection
   // a. Receives a postId as the parameter
@@ -80,8 +79,7 @@ function createElemWithText(elementName = "p", textContent = "", className){
   function toggleCommentSection(postId){
     
     //deal with initial conditions
-    if (postId === undefined) return;
-    if (postId != postId.id) return null;
+    if (!postId) return;
     
     const section = document.querySelector(`section[data-post-id='${postId}']`); //define section
 
@@ -89,7 +87,7 @@ function createElemWithText(elementName = "p", textContent = "", className){
         section.classList.toggle("hide"); //...and toggle the hide class
     }
     
-    return section; //????
+    return section;
   }
   
   // 4. toggleCommentButton
@@ -105,8 +103,8 @@ function createElemWithText(elementName = "p", textContent = "", className){
   function toggleCommentButton(postId){
     
     //deal with initial conditions
-    if (postId === undefined) return;
-    if (postId != postId.id) return null;
+    if (!postId) return;
+    //if (!postId) return null;
 
     const button = document.querySelector(`button[data-post-id='${postId}']`); //name the button
 
@@ -164,20 +162,17 @@ function createElemWithText(elementName = "p", textContent = "", className){
 // will pass for addButtonListeners until toggleComments exists. I recommend
 // waiting on the logic inside the toggleComments function until we get there.
 function addButtonListeners(){
-
-  //const body = document.querySelectorAll("body"); //identify body
-  const main = document.getElementById("main"); //identify main
-  const button = main.getElementsByTagName("button"); //identify buttons
+    
+    const main = document.querySelector("main");
+    const button = main.querySelectorAll("button"); //identify buttons
   
-  //while loop
-  if (button){ //if buttons exist...
+    if (button){ //if buttons exist...
 
-    button.forEach(() => {
-        const postId = document.querySelector("button.dataset.postId");
-        //let postId = button.dataset.postId;
-        button.addEventListener("click", function (e) {toggleComments(e, postId)},false);
-    });
-}
+        button.forEach(() => {
+            const postId = document.querySelector(`postId[button-dataset-postId]`); //define section
+            document.addEventListener("click", function (e) {toggleComments(e, postId)},false);
+        });
+    }
 
   return button;
 }
@@ -191,13 +186,14 @@ function addButtonListeners(){
 // e. Refer to the addButtonListeners function as this should be nearly identical
 // f. Return the button elements which were selected
 function removeButtonListeners(){
-    const main = document.getElementById("main");
-    const button = main.querySelector("button"); //identify buttons
+
+    const main = document.querySelector("main");//identify main
+    const button = main.querySelectorAll("button"); //identify buttons
 
     //loop thru the data
-    button.forEach((obj) => { //begin loop
-        const postId = button.dataset.id;
-        removeEventListener("click", function (e) {toggleComments(e, postId)},false);
+    button.forEach(() => { //begin loop
+        const postId = document.querySelector(`postId[button-dataset-id]`);//select postId
+        removeEventListener("click", function (e) {toggleComments(e, postId)},false);//remove event listener
     });
     return button;
 
@@ -217,18 +213,18 @@ function removeButtonListeners(){
 // j. Append the h3 and paragraphs to the article element (see cheatsheet)
 // k. Append the article element to the fragment
 // l. Return the fragment element
-function createComments(jsonComments){
+function createComments(comments){
 
-    if (jsonComments === undefined) return; //deal with initial conditions
+    if (!comments) return; //deal with initial conditions
 
     const fragment = document.createDocumentFragment();//create fragment
 
     //loop thru the data
-    jsonComments.forEach(() => { //begin loop
-        const article = document.createElement("article"); //create article
-        const h3 = createElemWithText('h3', jsonComments.name); //create h3
-        const para1 = createElemWithText('p', jsonComments.body); //create para1
-        const para2 = createElemWithText('p', `From: ${jsonComments.email}`); //create para2
+    comments.forEach(() => { //begin loop
+        const article = document.createElement('article'); //create article
+        const h3 = createElemWithText('h3', comments.name); //create h3
+        const para1 = createElemWithText('p', comments.body); //create para1
+        const para2 = createElemWithText('p', `From: ${comments.email}`); //create para2
 
         article.append(h3, para1, para2); //append the elements to article
         fragment.append(article); //append article to fragment
@@ -247,15 +243,16 @@ function createComments(jsonComments){
 // f. Loops through the options elements and appends each option element to the
 // select menu
 // g. Return the selectMenu element
-function populateSelectMenu(jsonData){
+function populateSelectMenu(users){
 
-    if (jsonData === undefined) return; //deal with initial conditions
+    if (!users) return; //deal with initial conditions
 
-    const selectMenu = document.querySelectorAll("#selectMenu");//select selectMenu
-    createSelectOptions(jsonData);//call the other function
+    let selectMenu = document.querySelectorAll("selectMenu");//select selectMenu
+
+    let optionArray = createSelectOptions(users);//call the other function
 
     optionArray.forEach(() =>{ //loop thru option array
-        selectMenu.append(option);//append the option to select menu
+        selectMenu.append(users);//append the option to select menu
     });
 
     return selectMenu;
@@ -275,17 +272,16 @@ function populateSelectMenu(jsonData){
 // e. Await the users data response
 // f. Return the JSON data
 const getUsers = async () => {//start the async function
-    const userData = await fetch (//define the user data
+
+    try {//start try block
+      const userData = await fetch (//define the user data
         "https://jsonplaceholder.typicode.com/users");//data url
 
-        try {//start try block
-            const allUsers = await fetch(userData);
-            const data = await response.json();
-        } catch (err){//start catch block
-            //empty
-        }
-
         return await userData.json();//return the json data
+
+    } catch (err){//start catch block
+        //empty
+    }
 }
 
 
@@ -300,20 +296,19 @@ const getUsers = async () => {//start the async function
 // g. Return the JSON data
 const getUserPosts = async (userId) => {//start async function
 
-    if (userId === undefined) return;//deal with initial conditions
+    if (!userId) return;//deal with initial conditions
 
-    const postData = await fetch(//define post data
-        "https://jsonplaceholder.typicode.com/posts");//data url
-
-        try {//start try block
-            const allUsers = await fetch(postData);//define all users
-            const data = await response.json();//define data response
-        } catch (err){//start catch block
-            //empty
-        }
+    try {//start try block
+      const postData = await fetch(//define post data
+        `https://jsonplaceholder.typicode.com/posts?userId=${userId}`);//data url
 
         return await postData.json();//return json post data
+
+    } catch (err){//start catch block
+        //empty
+    }
 }
+
 
 // 12. getUser
 // a. Receives a user id as a parameter
@@ -326,19 +321,17 @@ const getUserPosts = async (userId) => {//start async function
 // g. Return the JSON data
 const getUser = async (userId) => {//start async function
 
-    if (userId === undefined) return;//deal with initial conditions
+    if (!userId) return;//deal with initial conditions
 
-    const data = await fetch(//define data
-        "https://jsonplaceholder.typicode.com/posts");//data url
+    try {//start try block
+      const userData = await fetch(//define data
+        `https://jsonplaceholder.typicode.com/users?id=${userId}`);//data url
 
-        try {//start try block
-            const user = await fetch(data);//define user
-            const userData = await response.json();//define user data response
-        } catch (err){//start catch block
-            //empty
-        }
+        return await userData.json();//return json data
 
-        return await data.json();//return json data
+    } catch (err){//start catch block
+        //empty
+    }
 }
 
 // 13. getPostComments
@@ -352,19 +345,17 @@ const getUser = async (userId) => {//start async function
 // g. Return the JSON data
 const getPostComments = async (postId) => {//start async function
 
-    if (postId === undefined) return;//deal with initial conditions
+    if (!postId) return;//deal with initial conditions
 
-    const comments = await fetch(//define comments
-        "https://jsonplaceholder.typicode.com/posts/1/comments");//comments url
-
-        try {//start try block
-            const allUsers = await fetch(comments);//define all users
-            const data = await response.json();//define data response
-        } catch (err){//start catch block
-            //empty
-        }
+    try {//start try block
+      const comments = await fetch(//define comments
+        `https://jsonplaceholder.typicode.com/comments?postId=${postId}`);//comments url
 
         return await comments.json(); //return the json data
+
+    } catch (err){//start catch block
+        //empty
+    }
 }
 
 
@@ -388,11 +379,11 @@ const getPostComments = async (postId) => {//start async function
 // j. Return the section element
 const displayComments = async (postId) => {
 
-    if (postId === undefined) return;//deal with initial conditions
+    if (!postId) return;//deal with initial conditions
 
     const section = document.createElement("section");//create section element
 
-    section.dataset.postId = postId //set the attribute
+    section.dataset.postId = postId; //set the attribute
 
     section.classList.add('comments', 'hide');//add comments and hide to section classes
     
@@ -433,7 +424,7 @@ const displayComments = async (postId) => {
 // t. Return the fragment element
 const createPosts = async (jsonPosts) => {
 
-    if (jsonPosts === undefined) return;//deal with initial conditions
+    if (!jsonPosts) return;//deal with initial conditions
 
     else{
         const fragment = document.createDocumentFragment();//create fragment element
@@ -485,7 +476,8 @@ const displayPosts = async (posts) => {
         const main = createPosts(posts);
     }
     else {
-        const para = document.getElementById("p"); //default para in html?????
+        const para = document.querySelector(`p[data-post-id='${posts}']`);//default para in html?????
+
     }
     main.append(para);
     return main;
