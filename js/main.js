@@ -105,21 +105,21 @@ function toggleCommentButton(postId){
   //deal with initial conditions
   if (!postId) return;
 
-  const button = document.querySelector(`button[data-post-id='${postId}']`);
+  const button = document.querySelector(`button[data-post-id='${postId}']`); //define section
 
-  //define the messages
-  const hideComments = "Hide Comments";
-  const showComments = "Show Comments";
-  
-  //toggle the comments
-  if (button.textContent == showComments) {
-    button.textContent = hideComments; //swap to hide
-  } else {
-    button.textContent = showComments; //change it back
+  if (button){
+    //define the messages
+    const hideComments = "Hide Comments";
+    const showComments = "Show Comments";
+    
+    //toggle the comments
+    if (button.textContent == showComments) {
+      button.textContent = hideComments; //swap to hide
+    } else {
+      button.textContent = showComments; //change it back
+    }
   }
-
   return button;
-
 }
 
 // 5. deleteChildElements
@@ -164,17 +164,21 @@ function deleteChildElements(parentElement){
 function addButtonListeners(){
   
   const main = document.querySelector("main");
-  const button = main.querySelectorAll("button"); //identify buttons
+  const buttons = main.querySelectorAll("button"); //identify buttons
+  let buttonArray = [];
 
-  if (button){ //if buttons exist...
+  if (buttons){ //if buttons exist...
 
-    button.forEach(() => {//begin loop
-        const postId = document.querySelector(`postId[button-dataset-postId]`); //define section
-        document.addEventListener("click", function (e) {toggleComments(e, postId)},false);
-    });
+    for(let i = 0; i < buttons.length; i++){
+      let button = buttons[i];
+      let postId = button.dataset.postId;
+      button.addEventListener("click", function (e) {toggleComments(e, postId)},false);
+      buttonArray.push(button);
+      i++;
+    }
   }
 
-return button;
+return buttonArray;
 }
 
 // 7. removeButtonListeners
@@ -190,11 +194,13 @@ function removeButtonListeners(){
   const main = document.querySelector("main");//identify main
   const button = main.querySelectorAll("button"); //identify buttons
 
-  //loop thru the data
-  button.forEach(() => { //begin loop
+  if (button){ //if buttons exist...
+
+    button.forEach(() => { //begin loop
       const postId = document.querySelector(`postId[button-dataset-id]`);//select postId
-      document.removeEventListener("click", function (e) {toggleComments(e, postId)},false);//remove event listener
-  });
+      removeEventListener("click", function (e) {toggleComments(e, postId)},false);//remove event listener
+    });
+  }
 
 return button;
 }
@@ -246,15 +252,18 @@ function populateSelectMenu(users){
 
   if (!users) return; //deal with initial conditions
 
-  let selectMenu = document.querySelectorAll("selectMenu");//select selectMenu
+  let selectMenu = document.querySelector("#selectMenu");//select selectMenu
+  
+  let optionArray = [];//make new array
 
-  let optionArray = createSelectOptions(users);//call the other function
+  optionArray = createSelectOptions(users);//call the other function
 
-  optionArray.forEach(() =>{ //loop thru option array
-      selectMenu.append(users);//append the option to select menu
-  });
+  for(let i = 0; i < users.length; i++){//loop through users data
+    let user = users[i];//iterator
+    selectMenu.append(user);//append user to selectMenu
+  }
 
-  return selectMenu;
+  return selectMenu;//return select menu
 }
 
 // NOTE: The next functions use Async / Await to request data from an API. We cover this in
@@ -324,7 +333,7 @@ const getUser = async (userId) => {//start async function
 
   try {//start try block
     const userData = await fetch(//define data
-      `https://jsonplaceholder.typicode.com/users?id=${userId}`);//data url
+      `https://jsonplaceholder.typicode.com/users/${userId}`);//data url
 
       return await userData.json();//return json data
 
@@ -425,34 +434,35 @@ const createPosts = async (jsonPosts) => {
 
   if (!jsonPosts) return;//deal with initial conditions
 
-  const fragment = document.createDocumentFragment();//create fragment element
+  let fragment = document.createDocumentFragment("fragment");//create fragment element
 
   for(let i = 0; i < jsonPosts.length; i++){//start for loop
-      let post = jsonPosts[i];
+      let post = jsonPosts[i];//iterator
 
-      const article = document.createElement("article");//create article element
-      const h2 = document.createElement("h2", `Post Title: ${jsonPosts.title}`);
-      const p1 = document.createElement("p1", `Post Body: ${jsonPosts.body}`);
-      const p2 = document.createElement("p2", `Post ID: ${jsonPosts.id}`);
+      article = document.createElement("article");//create article element
 
-      const author = await getUser(jsonPosts.userId);
+      const h2 = createElemWithText("h2", `Post Title: ${post.title}`);//h2
+      const p1 = createElemWithText("p1", `Post Body: ${post.body}`);//p1
+      const p2 = createElemWithText("p2", `Post ID: ${post.id}`);//p2
 
-      const p3 = document.createElement("p3", `Author: ${author.name} with ${author.company.name}`); ///not sure about this
-      const p4 = document.createElement("p4", `Catch Phrase: ${author.company.catchPhrase}`);////catchphrase???
+      const author = await getUser(post.userId);//define author
 
-      const button = document.createElemWithText('Show Comments');
-      button.dataset.postId = jsonPosts.id;
+      const p3 = createElemWithText("p3", `Author: ${author.name} with ${author.company.name}`); //p3
+      const p4 = createElemWithText("p4", `Catch Phrase: ${author.company.catchPhrase}`);//p4
 
-      article.append(h2, p1, p2, p3, p4, button, author);
+      const button = createElemWithText("button", "Show Comments");//define button
+      button.dataset.postId = post.id; //set attribute
 
-      const section = await displayComments(jsonPosts.id);
+      const section = await displayComments(post.id); //define section
 
-      article.append(section);
+      article.append(h2, p1, p2, p3, p4, button, section);//append all to article
+
+      i++; //iterator
   }
-  fragment.append(article);
-  return fragment;
-  
 
+  fragment.append(article);//append article to fragment
+  
+  return fragment;//return the fragment
 }
 
 // 16. displayPosts
@@ -470,17 +480,17 @@ const createPosts = async (jsonPosts) => {
 const displayPosts = async (posts) => {
 
   const main = document.querySelector("main"); //select main
-  
+
   if (posts) {//if posts exists
-      const element = await createPosts(posts);//get element from createPosts
+      let element = await createPosts(posts);//get element from createPosts
+      main.append(element);//append element to main
+      return element;
   }
+
   else {//if posts does not exist
-      const element = main.querySelector("default-text");//element is the default para
-
+     return;
   }
-  main.append(element);//append element to main
 
-  return element;
 }
 
 
@@ -531,12 +541,18 @@ function toggleComments(e, postId){
 // l. Return an array of the results from the functions called: [removeButtons, main,
 // fragment, addButtons]
 const refreshPosts = async (jsonPosts) => {
+  if(!jsonPosts) return;//deal with initial conditions
+
+  const main = document.createElement("main");//define main
+
   const removeButtons = removeButtonListeners(); //call removeButtonListeners
   const mainElement = deleteChildElements(main);//pass main to deleteChildElements
   const docFragment = displayPosts(jsonPosts); //pass posts to displayPosts
   const addedButtons = addButtonListeners(); //call addButtonListeners
-  const arr = [];//make empty array
+
+  let arr = [];//make empty array
   arr.push(removeButtons, mainElement, docFragment, addedButtons);//push all to array
+
   return arr;//return the array
 }
 
@@ -553,11 +569,14 @@ const refreshPosts = async (jsonPosts) => {
 // i. Return an array with the userId, posts and the array returned from refreshPosts:
 // [userId, posts, refreshPostsArray]
 const selectMenuChangeEventHandler = async () => {
-  const userId = e?.target?.value || 1; //define userId
+
+  const userId = e.target.value || 1; //define userId
   const posts = await getUserPosts(userId);// define posts
   const refreshPostsArray = await refreshPosts(posts);//define refreshPostsArray
+
   const arr = []; //new array
   arr.push(userId, posts, refreshPostsArray);//push items to array
+
   return arr; //return array
 }
 
@@ -591,7 +610,7 @@ const initPage = async () => {
 function initApp() {
   initPage();//call initPage
   const selectMenu = document.querySelector("selectMenu"); //select selectMenu
-  selectMenu.addEventListener("change", selectMenuChangeEventHandler, false);//add event listener to select menu
+  selectMenu.addEventListener("change", selectMenuChangeEventHandler);//add event listener to select menu
 
 }
 
@@ -607,3 +626,5 @@ function initApp() {
 // 2. Listen for the “DOMContentLoaded” event.
 // 3. Put initApp in the listener as the event handler function.
 // 4. This will call initApp after the DOM content has loaded and your app will be started.
+
+document.addEventListener("DOMContentLoaded", initApp);
